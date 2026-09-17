@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Models;
+
+use App\Support\Antiguedad;
+use App\Support\TextoInventario;
+use Database\Factories\RadioFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+#[Fillable([
+    'item',
+    'departamento',
+    'area',
+    'usuario',
+    'cargo',
+    'tipo',
+    'marca_referencia',
+    'modelo',
+    'serial',
+    'fecha_adquisicion',
+    'observaciones',
+    'en_traslado',
+    'en_baja',
+    'en_disponible',
+])]
+class Radio extends Model
+{
+    /** @use HasFactory<RadioFactory> */
+    use HasFactory;
+
+    protected $table = 'radios_comunicacion';
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'fecha_adquisicion' => 'date',
+            'en_traslado' => 'boolean',
+            'en_baja' => 'boolean',
+            'en_disponible' => 'boolean',
+        ];
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @param  array<string, string>  $filtros
+     * @return Builder<self>
+     */
+    public function scopeFiltrar(Builder $query, array $filtros): Builder
+    {
+        foreach (['usuario', 'departamento', 'tipo', 'marca_referencia', 'modelo', 'serial'] as $campo) {
+            if (filled($filtros[$campo] ?? null)) {
+                $query->whereRaw('UPPER('.$campo.') LIKE ?', [TextoInventario::like($filtros[$campo])]);
+            }
+        }
+
+        if (($filtros['disponible'] ?? '') === '1') {
+            $query->where('en_disponible', true);
+        }
+
+        return $query;
+    }
+
+    public function antiguedad(): string
+    {
+        return Antiguedad::desde($this->fecha_adquisicion);
+    }
+
+    public function serialMostrado(): string
+    {
+        return (string) ($this->serial ?: '');
+    }
+
+    public function marcaMostrada(): string
+    {
+        return trim(collect([$this->marca_referencia, $this->modelo])->filter()->implode(' '));
+    }
+
+    public static function siguienteItem(): string
+    {
+        $maximo = static::query()->get()->max(fn (self $radio): int => (int) $radio->item);
+
+        return (string) ((int) $maximo + 1);
+    }
+}

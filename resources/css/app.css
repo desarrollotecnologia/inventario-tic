@@ -1,0 +1,79 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-brand-green: #17823a;
+    --color-brand-green-dark: #0f5c28;
+    --color-brand-green-soft: #e7f6ec;
+    --color-brand-red: #d0112b;
+    --color-brand-red-dark: #a00d22;
+    --color-brand-red-soft: #fdecee;
+}
+
+.borde-institucional {
+    background-image: linear-gradient(to right, var(--color-brand-green) 50%, var(--color-brand-red) 50%);
+}
+
+.portada-tecnologica {
+    position: relative;
+    isolation: isolate;
+    border-color: rgba(23, 130, 58, 0.35);
+    background-color: #06140c;
+    background-image:
+        radial-gradient(circle at 12% 18%, rgba(23, 130, 58, 0.5), transparent 38%),
+        radial-gradient(circle at 90% 88%, rgba(208, 17, 43, 0.22), transparent 34%),
+        linear-gradient(rgba(52, 211, 128, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(52, 211, 128, 0.12) 1px, transparent 1px);
+    background-size: auto, auto, 28px 28px, 28px 28px;
+}
+
+.portada-tecnologica::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: radial-gradient(rgba(167, 243, 208, 0.45) 1.2px, transparent 1.3px);
+    background-size: 28px 28px;
+    mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.85), transparent 72%);
+}
+
+.portada-tecnologica > * {
+    position: relative;
+    z-index: 1;
+}
+
+.portada-tecnologica h1 {
+    filter: drop-shadow(0 0 18px rgba(23, 130, 58, 0.35));
+}
+
+.registro-mayusculas input:not([type='file']):not([type='date']):not([type='hidden']):not([type='checkbox']):not([type='radio']):not([name='cuenta_office365']):not([name='contrasena_deslock_eset']),
+.registro-mayusculas textarea,
+.registro-mayusculas select,
+.listado-mayusculas tbody,
+[data-combobox-option] {
+    text-transform: uppercase;
+}
+
+[data-firma-editor] {
+    position: relative;
+}
+
+[data-firma-editor][data-empty='true']:not(:focus)::before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+[data-firma-editor] img {
+    max-width: 320px;
+    height: auto;
+    display: block;
+    margin: 0.5rem 0;
+}
