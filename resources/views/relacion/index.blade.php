@@ -6,7 +6,7 @@
         subtitle="Ingresa al submódulo del tipo de activo que vas a gestionar."
     />
 
-    <div class="mt-8 grid gap-6 md:grid-cols-2">
+    <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($submodules as $submodule)
             <a
                 href="{{ route($submodule['route']) }}"

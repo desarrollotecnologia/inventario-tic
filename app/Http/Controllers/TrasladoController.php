@@ -6,6 +6,7 @@ use App\Http\Requests\FirmaRequest;
 use App\Http\Requests\TrasladoCorreoRequest;
 use App\Http\Requests\TrasladoRequest;
 use App\Mail\TrasladosRealizadosMail;
+use App\Models\Biometrico;
 use App\Models\Celular;
 use App\Models\EquipoComputo;
 use App\Models\Firma;
@@ -37,7 +38,8 @@ class TrasladoController extends Controller
                 ->concat(Celular::query()->where('en_traslado', true)->get())
                 ->concat(Radio::query()->where('en_traslado', true)->get())
                 ->concat(Impresora::query()->where('en_traslado', true)->get())
-                ->sortBy(fn (EquipoComputo|Celular|Radio|Impresora $equipo): int => (int) $equipo->item)
+                ->concat(Biometrico::query()->where('en_traslado', true)->get())
+                ->sortBy(fn (EquipoComputo|Celular|Radio|Impresora|Biometrico $equipo): int => (int) $equipo->item)
                 ->values(),
             'porNotificar' => $porNotificar,
             'firmas' => Firma::query()->latest('id')->get(),
@@ -78,10 +80,14 @@ class TrasladoController extends Controller
             ->where('en_traslado', true)
             ->get()
             ->keyBy('id');
+        $biometricosPendientes = Biometrico::query()
+            ->where('en_traslado', true)
+            ->get()
+            ->keyBy('id');
 
         $aplicados = 0;
 
-        DB::transaction(function () use ($request, $equiposPendientes, $celularesPendientes, $radiosPendientes, $impresorasPendientes, &$aplicados): void {
+        DB::transaction(function () use ($request, $equiposPendientes, $celularesPendientes, $radiosPendientes, $impresorasPendientes, $biometricosPendientes, &$aplicados): void {
             foreach ($request->validated('traslados') as $clave => $datos) {
                 $clave = (string) $clave;
 
@@ -119,6 +125,19 @@ class TrasladoController extends Controller
                     }
 
                     $this->aplicarTrasladoImpresora($impresora, $datos);
+                    $aplicados++;
+
+                    continue;
+                }
+
+                if (str_starts_with($clave, 'b-')) {
+                    $biometrico = $biometricosPendientes->get((int) substr($clave, 2));
+
+                    if ($biometrico === null) {
+                        continue;
+                    }
+
+                    $this->aplicarTrasladoBiometrico($biometrico, $datos);
                     $aplicados++;
 
                     continue;
@@ -352,6 +371,37 @@ class TrasladoController extends Controller
     }
 
     /**
+     * @param  array{fecha: string, usuario_recibe: string, cargo_recibe: string, departamento_recibe: string, area_recibe: string, observaciones?: string|null}  $datos
+     */
+    private function aplicarTrasladoBiometrico(Biometrico $biometrico, array $datos): void
+    {
+        Traslado::query()->create([
+            'biometrico_id' => $biometrico->id,
+            'fecha' => $datos['fecha'],
+            'usuario_entrega' => $biometrico->usuario,
+            'cargo_entrega' => $biometrico->cargo,
+            'departamento_entrega' => $biometrico->departamento,
+            'area_entrega' => $biometrico->area,
+            'tipo' => 'BIOMÉTRICO',
+            'descripcion_equipo' => $biometrico->marcaMostrada(),
+            'serial' => $biometrico->serialMostrado(),
+            'usuario_recibe' => $datos['usuario_recibe'],
+            'cargo_recibe' => $datos['cargo_recibe'],
+            'departamento_recibe' => $datos['departamento_recibe'],
+            'area_recibe' => $datos['area_recibe'],
+            'observaciones' => $datos['observaciones'] ?? null,
+        ]);
+
+        $biometrico->update([
+            'usuario' => $datos['usuario_recibe'],
+            'cargo' => $datos['cargo_recibe'],
+            'departamento' => $datos['departamento_recibe'],
+            'area' => $datos['area_recibe'],
+            'en_traslado' => false,
+        ]);
+    }
+
+    /**
      * @return Collection<int, Traslado>
      */
     private function trasladosPorNotificar(): Collection
@@ -444,6 +494,17 @@ class TrasladoController extends Controller
                 $impresora->departamento
             ));
 
+        Biometrico::query()
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get(['usuario', 'cargo', 'area', 'departamento'])
+            ->each(fn (Biometrico $biometrico) => $registrar(
+                $biometrico->usuario,
+                $biometrico->cargo,
+                $biometrico->area,
+                $biometrico->departamento
+            ));
+
         Traslado::query()
             ->latest('id')
             ->get(['usuario_recibe', 'cargo_recibe', 'area_recibe', 'departamento_recibe'])
@@ -468,6 +529,7 @@ class TrasladoController extends Controller
             ->merge($this->valoresDe(Celular::class, $camposEquipo))
             ->merge($this->valoresDe(Radio::class, $camposEquipo))
             ->merge($this->valoresDe(Impresora::class, $camposEquipo))
+            ->merge($this->valoresDe(Biometrico::class, $camposEquipo))
             ->merge($this->valoresDe(Traslado::class, $camposTraslado))
             ->unique(fn (string $valor): string => mb_strtolower($valor))
             ->sort(SORT_NATURAL | SORT_FLAG_CASE)

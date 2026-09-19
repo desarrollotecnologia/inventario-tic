@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BiometricoController;
 use App\Http\Controllers\CelularController;
 use App\Http\Controllers\EquipoComputoController;
 use App\Http\Controllers\HomeController;
@@ -22,6 +23,14 @@ Route::resource('relacion-inventario-sistemas/impresoras', ImpresoraController::
 
 Route::patch('relacion-inventario-sistemas/impresoras/{impresora}/accion', [ImpresoraController::class, 'accion'])
     ->name('impresoras.accion');
+
+Route::resource('relacion-inventario-sistemas/biometricos', BiometricoController::class)
+    ->parameters(['biometricos' => 'biometrico'])
+    ->except(['show'])
+    ->names('biometricos');
+
+Route::patch('relacion-inventario-sistemas/biometricos/{biometrico}/accion', [BiometricoController::class, 'accion'])
+    ->name('biometricos.accion');
 
 Route::resource('relacion-inventario-sistemas/radios-de-comunicacion', RadioController::class)
     ->parameters(['radios-de-comunicacion' => 'radio'])

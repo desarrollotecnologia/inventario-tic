@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Biometrico;
 use App\Models\Celular;
 use App\Models\EquipoComputo;
 use App\Models\Impresora;
@@ -62,12 +63,21 @@ class ModuleController extends Controller
                 ->sortBy(fn (Impresora $impresora): int => (int) $impresora->item)
                 ->values();
 
+        $biometricos = $config['campo'] === null
+            ? collect()
+            : Biometrico::query()
+                ->where($config['campo'], true)
+                ->get()
+                ->sortBy(fn (Biometrico $biometrico): int => (int) $biometrico->item)
+                ->values();
+
         return view('modules.show', [
             'title' => $config['title'],
             'equipos' => $equipos,
             'celulares' => $celulares,
             'radios' => $radios,
             'impresoras' => $impresoras,
+            'biometricos' => $biometricos,
             'vacio' => $config['vacio'],
         ]);
     }

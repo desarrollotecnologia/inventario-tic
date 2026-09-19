@@ -69,6 +69,7 @@
                                         $equipo instanceof \App\Models\Celular => 'c-'.$equipo->id,
                                         $equipo instanceof \App\Models\Radio => 'r-'.$equipo->id,
                                         $equipo instanceof \App\Models\Impresora => 'i-'.$equipo->id,
+                                        $equipo instanceof \App\Models\Biometrico => 'b-'.$equipo->id,
                                         default => (string) $equipo->id,
                                     };
                                     $prefijo = 'traslados.'.$clave;
@@ -91,7 +92,11 @@
                                     <td class="break-words px-2 py-2.5">{{ $equipo->usuario ?: '—' }}</td>
                                     <td class="break-words px-2 py-2.5 font-medium text-slate-900">{{ $equipo instanceof \App\Models\EquipoComputo ? ($equipo->codigo ?: '—') : '—' }}</td>
                                     <td class="break-words px-2 py-2.5">{{ $equipo->area ?: '—' }}</td>
-                                    <td class="break-words px-2 py-2.5">{{ $equipo instanceof \App\Models\EquipoComputo ? ($equipo->descripcion ?: '—') : ($equipo->tipo ?: '—') }}</td>
+                                    <td class="break-words px-2 py-2.5">{{ match (true) {
+                                        $equipo instanceof \App\Models\EquipoComputo => $equipo->descripcion ?: '—',
+                                        $equipo instanceof \App\Models\Biometrico => 'BIOMÉTRICO',
+                                        default => $equipo->tipo ?: '—',
+                                    } }}</td>
                                     <td class="break-words px-2 py-2.5" title="{{ $equipo instanceof \App\Models\EquipoComputo ? $equipo->marca_referencia : $equipo->marcaMostrada() }}">{{ $equipo instanceof \App\Models\EquipoComputo ? ($equipo->marca_referencia ?: '—') : ($equipo->marcaMostrada() ?: '—') }}</td>
                                     <td class="break-words px-2 py-2.5 font-medium text-slate-900">{{ $equipo->serialMostrado() ?: '—' }}</td>
                                     <td class="relative z-20 overflow-visible px-2 py-2.5">

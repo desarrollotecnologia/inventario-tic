@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Biometrico;
 use App\Models\Celular;
 use App\Models\EquipoComputo;
 use App\Models\Impresora;
@@ -110,6 +111,7 @@ class EquipoComputoFields
             ->merge(Celular::query()->pluck($campo))
             ->merge(Radio::query()->pluck($campo))
             ->merge(Impresora::query()->pluck($campo))
+            ->merge(Biometrico::query()->pluck($campo))
             ->map(fn (mixed $valor): string => is_string($valor) ? trim($valor) : '')
             ->filter()
             ->unique(fn (string $valor): string => mb_strtolower($valor))

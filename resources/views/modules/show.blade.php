@@ -3,10 +3,10 @@
 
     <x-portada-modulo
         :title="$title"
-        subtitle="Equipos, celulares, tablets, radios e impresoras marcados desde el inventario."
+        subtitle="Equipos, celulares, tablets, radios, impresoras y biométricos marcados desde el inventario."
     />
 
-    @if ($equipos->isEmpty() && $celulares->isEmpty() && $radios->isEmpty() && $impresoras->isEmpty())
+    @if ($equipos->isEmpty() && $celulares->isEmpty() && $radios->isEmpty() && $impresoras->isEmpty() && $biometricos->isEmpty())
         <section class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <p class="px-6 py-10 text-sm text-slate-500">{{ $vacio }}</p>
         </section>
@@ -184,6 +184,47 @@
                                     @include('relacion.equipos-computo.acciones', [
                                         'modelo' => $impresora,
                                         'rutaAccion' => route('impresoras.accion', $impresora),
+                                    ])
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    @endif
+
+    @if ($biometricos->isNotEmpty())
+        <section class="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div>
+                <table class="w-full table-fixed text-left text-xs">
+                    <thead class="bg-slate-50 text-[11px] uppercase leading-tight tracking-wide text-slate-500">
+                        <tr>
+                            <th class="w-[6%] px-2 py-2.5 font-medium">Ítem</th>
+                            <th class="w-[16%] px-2 py-2.5 font-medium">Usuario</th>
+                            <th class="w-[16%] px-2 py-2.5 font-medium">Departamento</th>
+                            <th class="w-[16%] px-2 py-2.5 font-medium">Marca y Referencia</th>
+                            <th class="w-[16%] px-2 py-2.5 font-medium">Modelo</th>
+                            <th class="w-[16%] px-2 py-2.5 font-medium">Serial</th>
+                            <th class="w-[14%] px-2 py-2.5 font-medium">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach ($biometricos as $biometrico)
+                            <tr @class([
+                                'text-slate-700',
+                                'bg-sky-100' => $biometrico->en_disponible && ! $biometrico->en_traslado,
+                            ])>
+                                <td class="break-words px-2 py-2.5">{{ $biometrico->item ?: '—' }}</td>
+                                <td @class(['break-words px-2 py-2.5', 'line-through text-slate-400' => $biometrico->en_disponible])>{{ $biometrico->usuario ?: '—' }}</td>
+                                <td @class(['break-words px-2 py-2.5', 'line-through text-slate-400' => $biometrico->en_disponible])>{{ $biometrico->departamento ?: '—' }}</td>
+                                <td class="break-words px-2 py-2.5">{{ $biometrico->marca_referencia ?: '—' }}</td>
+                                <td class="break-words px-2 py-2.5">{{ $biometrico->modelo ?: '—' }}</td>
+                                <td class="break-words px-2 py-2.5 font-medium text-slate-900">{{ $biometrico->serial ?: '—' }}</td>
+                                <td class="px-2 py-2.5">
+                                    @include('relacion.equipos-computo.acciones', [
+                                        'modelo' => $biometrico,
+                                        'rutaAccion' => route('biometricos.accion', $biometrico),
                                     ])
                                 </td>
                             </tr>

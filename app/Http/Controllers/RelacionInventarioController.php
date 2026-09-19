@@ -34,6 +34,12 @@ class RelacionInventarioController extends Controller
                     'route' => 'celulares.index',
                     'ready' => true,
                 ],
+                [
+                    'title' => 'Biométricos',
+                    'description' => 'Inventario de lectores biométricos y control de acceso.',
+                    'route' => 'biometricos.index',
+                    'ready' => true,
+                ],
             ],
         ]);
     }

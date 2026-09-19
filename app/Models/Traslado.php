@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'celular_id',
     'radio_id',
     'impresora_id',
+    'biometrico_id',
     'fecha',
     'usuario_entrega',
     'cargo_entrega',
@@ -61,6 +62,14 @@ class Traslado extends Model
     }
 
     /**
+     * @return BelongsTo<Biometrico, $this>
+     */
+    public function biometrico(): BelongsTo
+    {
+        return $this->belongsTo(Biometrico::class);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -73,7 +82,7 @@ class Traslado extends Model
 
     public function codigoMostrado(): string
     {
-        if ($this->celular_id || $this->radio_id || $this->impresora_id) {
+        if ($this->celular_id || $this->radio_id || $this->impresora_id || $this->biometrico_id) {
             return '—';
         }
 
