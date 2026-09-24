@@ -21,13 +21,13 @@ class EquipoComputoFields
                 'codigo' => ['label' => 'Código Contable', 'type' => 'text'],
             ],
             'Ubicación y responsable' => [
-                'departamento' => ['label' => 'Departamento', 'type' => 'combobox', 'options' => self::departamentos()],
-                'area' => ['label' => 'Área', 'type' => 'combobox', 'options' => self::areas()],
+                'departamento' => ['label' => 'Departamento', 'type' => 'combobox', 'options' => self::departamentos(), 'allow_custom' => true],
+                'area' => ['label' => 'Área', 'type' => 'combobox', 'options' => self::areas(), 'allow_custom' => true],
                 'usuario' => ['label' => 'Usuario', 'type' => 'combobox', 'options' => self::usuarios(), 'allow_custom' => true],
                 'cargo' => ['label' => 'Cargo', 'type' => 'combobox', 'options' => self::cargos(), 'allow_custom' => true],
             ],
             'Equipo' => [
-                'descripcion' => ['label' => 'Descripción', 'type' => 'combobox', 'options' => self::descripciones()],
+                'descripcion' => ['label' => 'Descripción', 'type' => 'combobox', 'options' => self::descripciones(), 'allow_custom' => true],
                 'marca_referencia' => ['label' => 'Marca y Referencia', 'type' => 'text'],
                 'service_tag_product_name' => [
                     'label' => 'Service Tag / Serial CPU o Express code',
@@ -38,16 +38,16 @@ class EquipoComputoFields
                     ],
                 ],
                 'procesador' => ['label' => 'Procesador', 'type' => 'combobox', 'options' => self::procesadores(), 'allow_custom' => true],
-                'memoria' => ['label' => 'Memoria', 'type' => 'combobox', 'options' => self::memorias()],
-                'disco' => ['label' => 'Disco', 'type' => 'combobox', 'options' => self::discos()],
+                'memoria' => ['label' => 'Memoria', 'type' => 'combobox', 'options' => self::memorias(), 'allow_custom' => true],
+                'disco' => ['label' => 'Disco', 'type' => 'combobox', 'options' => self::discos(), 'allow_custom' => true],
                 'nombre_equipo' => ['label' => 'Nombre de equipo', 'type' => 'text'],
             ],
             'Software' => [
-                'windows' => ['label' => 'Windows', 'type' => 'combobox', 'options' => self::windows()],
+                'windows' => ['label' => 'Windows', 'type' => 'combobox', 'options' => self::windows(), 'allow_custom' => true],
                 'serial_windows' => ['label' => 'Serial Windows', 'type' => 'text'],
-                'office' => ['label' => 'Office', 'type' => 'combobox', 'options' => self::offices()],
+                'office' => ['label' => 'Office', 'type' => 'combobox', 'options' => self::offices(), 'allow_custom' => true],
                 'serial_office' => ['label' => 'Serial Office', 'type' => 'text'],
-                'cuenta_office365' => ['label' => 'Cuenta Office365', 'type' => 'text'],
+                'cuenta_office365' => ['label' => 'Cuenta Office365', 'type' => 'combobox', 'options' => self::cuentasOffice365(), 'allow_custom' => true],
                 'antivirus' => ['label' => 'Antivirus', 'type' => 'text'],
             ],
             'Seguridad' => [
@@ -107,11 +107,24 @@ class EquipoComputoFields
      */
     private static function valoresUnicos(string $campo): array
     {
-        return EquipoComputo::query()->pluck($campo)
-            ->merge(Celular::query()->pluck($campo))
-            ->merge(Radio::query()->pluck($campo))
-            ->merge(Impresora::query()->pluck($campo))
-            ->merge(Biometrico::query()->pluck($campo))
+        $modelos = match ($campo) {
+            'descripcion' => [EquipoComputo::class, Impresora::class],
+            default => [
+                EquipoComputo::class,
+                Celular::class,
+                Radio::class,
+                Impresora::class,
+                Biometrico::class,
+            ],
+        };
+
+        $valores = collect();
+
+        foreach ($modelos as $modelo) {
+            $valores = $valores->merge($modelo::query()->pluck($campo));
+        }
+
+        return $valores
             ->map(fn (mixed $valor): string => is_string($valor) ? trim($valor) : '')
             ->filter()
             ->unique(fn (string $valor): string => mb_strtolower($valor))
@@ -163,7 +176,7 @@ class EquipoComputoFields
      */
     public static function departamentos(): array
     {
-        return [
+        return self::mezclarCatalogo([
             'CONTROLLER',
             'ADMIN Y FINANCIERO',
             'CALIDAD',
@@ -174,7 +187,7 @@ class EquipoComputoFields
             'PLANEACION Y PROYECTOS',
             'OPERACIONES',
             'REVISORIA FISCAL',
-        ];
+        ], 'departamento');
     }
 
     /**
@@ -182,7 +195,7 @@ class EquipoComputoFields
      */
     public static function areas(): array
     {
-        return [
+        return self::mezclarCatalogo([
             'A Y F',
             'BASCULA CORRALE',
             'CALIDAD BENEFICIO',
@@ -208,7 +221,7 @@ class EquipoComputoFields
             'SISO',
             'TECNOLOGIA',
             'TESORERIA',
-        ];
+        ], 'area');
     }
 
     /**
@@ -216,13 +229,31 @@ class EquipoComputoFields
      */
     public static function descripciones(): array
     {
-        return [
+        return self::mezclarCatalogo([
             'ALL IN ONE',
             'MINI',
             'PORTATIL',
             'TORRE',
             'SERVIDOR',
-        ];
+            'SWITCHES',
+            'ALMACENAMIENTO',
+        ], 'descripcion');
+    }
+
+    /**
+     * @param  list<string>  $catalogo
+     * @return list<string>
+     */
+    private static function mezclarCatalogo(array $catalogo, string $campo): array
+    {
+        return collect($catalogo)
+            ->merge(self::valoresUnicos($campo))
+            ->map(fn (mixed $valor): string => is_string($valor) ? trim($valor) : '')
+            ->filter()
+            ->unique(fn (string $valor): string => mb_strtolower($valor))
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->all();
     }
 
     /**
@@ -338,5 +369,108 @@ class EquipoComputoFields
             'Office 2010 Home and Student',
             'Sin Office',
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function cuentasOffice365Catalogo(): array
+    {
+        $dominio = '@frigoriofrio365.onmicrosoft.com';
+
+        return collect([
+            'accionistas',
+            'almacen',
+            'analitica',
+            'analista.produccion',
+            'analista.sig',
+            'aux.cartera',
+            'aux.revisoriafiscal2',
+            'aux.gestionhumana',
+            'aux.siso2',
+            'aux.subproductos',
+            'aux.tic',
+            'aux.calidad',
+            'aux.comercial',
+            'aux.contable',
+            'aux.documental',
+            'aux.juridica',
+            'auxiliar.mantenimeinto',
+            'aux.operaciones',
+            'aux.siso1',
+            'bienestar.psicologia',
+            'calidad.desposte',
+            'controlinterno',
+            'coordinacion.ambiental',
+            'coordinacion.comercial',
+            'coordinacion.contable',
+            'coordinacion.lyd',
+            'coordinacion.tesoreria',
+            'coordinacion.tic',
+            'coordinacion.calidad',
+            'coordinacion.compras',
+            'coordinacion.corrales',
+            'coordinacion.gestionhumana',
+            'coordinacion.juridica',
+            'coordinacion.linea',
+            'coordinacion.logistica',
+            'coordinacion.subproductos',
+            'direccion.logistica',
+            'direccion.proyectos',
+            'direccion.operaciones',
+            'director.surtidores',
+            'ejecutivo.comercial2',
+            'gerencia.calidad',
+            'gerencia.comercial',
+            'gerencia.financiera',
+            'gerencia.general',
+            'gerencia.juridica',
+            'gestor.administrativo',
+            'gestor.calidad',
+            'gestor.carnes',
+            'gestor.compras',
+            'gestor.contable',
+            'gestor.contable2',
+            'gestor.costos',
+            'gestor.cartera',
+            'gestor.contratacion',
+            'logistica.visceras',
+            'gestor.nomina',
+            'gestor.productos.carnicos',
+            'gestor.proyectos',
+            'gestor.proyectos.subproductos',
+            'gestor.siso',
+            'gestor.tic',
+            'inspector',
+            'jefe.mercadeo',
+            'jefe.ventas',
+            'lider.proyectos',
+            'logistica',
+            'logistica.desposte1',
+            'alistamiento.olimpica',
+            'marketing',
+            'planillaje4',
+            'planillaje7',
+            'servicioalcliente',
+            'tic',
+        ])
+            ->map(fn (string $cuenta): string => $cuenta.$dominio)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function cuentasOffice365(): array
+    {
+        return collect(self::cuentasOffice365Catalogo())
+            ->merge(EquipoComputo::query()->pluck('cuenta_office365'))
+            ->map(fn (mixed $valor): string => is_string($valor) ? trim($valor) : '')
+            ->filter()
+            ->unique(fn (string $valor): string => mb_strtolower($valor))
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->all();
     }
 }

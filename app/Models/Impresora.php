@@ -60,6 +60,14 @@ class Impresora extends Model
             $query->where('en_disponible', true);
         }
 
+        if (($filtros['traslado'] ?? '') === '1') {
+            $query->where('en_traslado', true);
+        }
+
+        if (($filtros['baja'] ?? '') === '1') {
+            $query->where('en_baja', true);
+        }
+
         return $query;
     }
 

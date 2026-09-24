@@ -21,6 +21,8 @@ class ImpresoraController extends Controller
             'modelo' => trim((string) $request->query('modelo', '')),
             'serial' => trim((string) $request->query('serial', '')),
             'disponible' => $request->query('disponible') === '1' ? '1' : '',
+            'traslado' => $request->query('traslado') === '1' ? '1' : '',
+            'baja' => $request->query('baja') === '1' ? '1' : '',
         ];
 
         $totalImpresoras = Impresora::query()->count();

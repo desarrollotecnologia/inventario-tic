@@ -48,6 +48,9 @@ Route::resource('relacion-inventario-sistemas/celulares', CelularController::cla
 Route::patch('relacion-inventario-sistemas/celulares/{celular}/accion', [CelularController::class, 'accion'])
     ->name('celulares.accion');
 
+Route::get('relacion-inventario-sistemas/equipos-de-computo-exportar', [EquipoComputoController::class, 'exportar'])
+    ->name('equipos-computo.exportar');
+
 Route::resource('relacion-inventario-sistemas/equipos-de-computo', EquipoComputoController::class)
     ->parameters(['equipos-de-computo' => 'equipoComputo'])
     ->except(['show'])

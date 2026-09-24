@@ -61,6 +61,11 @@
     text-transform: uppercase;
 }
 
+[data-combobox-list][data-combobox-preserve-case] [data-combobox-option],
+[data-filter-combobox][data-combobox-preserve-case] [data-combobox-option] {
+    text-transform: none;
+}
+
 [data-firma-editor] {
     position: relative;
 }

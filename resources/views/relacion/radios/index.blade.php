@@ -104,21 +104,11 @@
                         class="min-w-[7rem] flex-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm text-slate-900 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green-soft"
                     >
                 </div>
-                <div class="mt-2">
+                <div class="mt-2 flex flex-wrap items-center gap-2">
                     <button type="submit" class="rounded-lg bg-brand-green px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-green-dark">
                         Buscar
                     </button>
-                    <label class="ml-3 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-semibold text-sky-800">
-                        <input
-                            type="checkbox"
-                            name="disponible"
-                            value="1"
-                            @checked($filtros['disponible'] === '1')
-                            onchange="this.form.submit()"
-                            class="h-3.5 w-3.5 rounded border-sky-300 text-sky-700 focus:ring-sky-500"
-                        >
-                        Solo disponibles
-                    </label>
+                    @include('relacion.partials.filtros-estado')
                 </div>
             </div>
         </div>
@@ -155,9 +145,10 @@
                                 <tr
                                     @class([
                                         'cursor-pointer text-slate-700',
-                                        'bg-orange-100 hover:bg-orange-200' => $radio->en_traslado,
-                                        'bg-sky-100 hover:bg-sky-200' => $radio->en_disponible && ! $radio->en_traslado,
-                                        'hover:bg-slate-50' => ! $radio->en_traslado && ! $radio->en_disponible,
+                                        'bg-red-100 hover:bg-red-200' => $radio->en_baja,
+                                        'bg-orange-100 hover:bg-orange-200' => $radio->en_traslado && ! $radio->en_baja,
+                                        'bg-sky-100 hover:bg-sky-200' => $radio->en_disponible && ! $radio->en_traslado && ! $radio->en_baja,
+                                        'hover:bg-slate-50' => ! $radio->en_traslado && ! $radio->en_disponible && ! $radio->en_baja,
                                     ])
                                     data-expand-row
                                     data-expand-target="detalle-radio-{{ $radio->id }}"
@@ -210,9 +201,10 @@
                                     id="detalle-radio-{{ $radio->id }}"
                                     @class([
                                         'hidden',
-                                        'bg-orange-50' => $radio->en_traslado,
-                                        'bg-sky-50' => $radio->en_disponible && ! $radio->en_traslado,
-                                        'bg-slate-50' => ! $radio->en_traslado && ! $radio->en_disponible,
+                                        'bg-red-50' => $radio->en_baja,
+                                        'bg-orange-50' => $radio->en_traslado && ! $radio->en_baja,
+                                        'bg-sky-50' => $radio->en_disponible && ! $radio->en_traslado && ! $radio->en_baja,
+                                        'bg-slate-50' => ! $radio->en_traslado && ! $radio->en_disponible && ! $radio->en_baja,
                                     ])
                                 >
                                     <td colspan="9" class="px-4 py-5">

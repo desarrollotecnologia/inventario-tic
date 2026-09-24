@@ -22,6 +22,8 @@ class CelularController extends Controller
             'imei' => trim((string) $request->query('imei', '')),
             'numero_celular' => trim((string) $request->query('numero_celular', '')),
             'disponible' => $request->query('disponible') === '1' ? '1' : '',
+            'traslado' => $request->query('traslado') === '1' ? '1' : '',
+            'baja' => $request->query('baja') === '1' ? '1' : '',
         ];
 
         $totalCelulares = Celular::query()->count();

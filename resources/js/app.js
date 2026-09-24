@@ -144,7 +144,8 @@ document.querySelectorAll('[data-filter-combobox]').forEach((combo) => {
 
     const posicionar = () => {
         const caja = input.getBoundingClientRect();
-        const ancho = Math.max(caja.width, 260);
+        const minimo = Number(combo.dataset.comboboxMinWidth || 260);
+        const ancho = Math.max(caja.width, Number.isFinite(minimo) ? minimo : 260);
         let izquierda = caja.left;
 
         if (izquierda + ancho > window.innerWidth - 8) {

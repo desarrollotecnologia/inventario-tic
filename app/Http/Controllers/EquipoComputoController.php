@@ -4,46 +4,51 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EquipoComputoRequest;
 use App\Models\EquipoComputo;
+use App\Support\EquipoComputoExcel;
 use App\Support\EquipoComputoFields;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EquipoComputoController extends Controller
 {
     public function index(Request $request): View
     {
-        $filtros = [
-            'usuario' => trim((string) $request->query('usuario', '')),
-            'departamento' => trim((string) $request->query('departamento', '')),
-            'descripcion' => trim((string) $request->query('descripcion', '')),
-            'marca_referencia' => trim((string) $request->query('marca_referencia', '')),
-            'serial' => trim((string) $request->query('serial', '')),
-            'windows' => trim((string) $request->query('windows', '')),
-            'office' => trim((string) $request->query('office', '')),
-            'disponible' => $request->query('disponible') === '1' ? '1' : '',
-        ];
-
+        $filtros = $this->filtros($request);
         $totalEquipos = EquipoComputo::query()->count();
-        $hayFiltros = collect($filtros)->contains(fn (string $valor): bool => $valor !== '');
-        $equipos = EquipoComputo::query()
-            ->filtrar($filtros)
-            ->get()
-            ->sortBy(fn (EquipoComputo $equipo): int => (int) $equipo->item)
-            ->values();
+        $equipos = $this->equiposFiltrados($filtros);
 
         return view('relacion.equipos-computo.index', [
             'equipos' => $equipos,
             'filtros' => $filtros,
             'totalEquipos' => $totalEquipos,
             'equiposFiltrados' => $equipos->count(),
-            'hayFiltros' => $hayFiltros,
+            'hayFiltros' => collect($filtros)->contains(fn (string $valor): bool => $valor !== ''),
             'hayEquipos' => $totalEquipos > 0,
             'hayTraslados' => EquipoComputo::query()->where('en_traslado', true)->exists(),
             'hayBajas' => EquipoComputo::query()->where('en_baja', true)->exists(),
             'groups' => EquipoComputoFields::groups(),
         ]);
+    }
+
+    public function exportar(Request $request): StreamedResponse
+    {
+        $equipos = $this->equiposFiltrados($this->filtros($request));
+        $contenido = EquipoComputoExcel::bytes($equipos);
+        $nombre = EquipoComputoExcel::nombreArchivo();
+
+        return response()->streamDownload(
+            function () use ($contenido): void {
+                echo $contenido;
+            },
+            $nombre,
+            [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]
+        );
     }
 
     public function create(): View
@@ -130,6 +135,38 @@ class EquipoComputoController extends Controller
         return redirect()
             ->route('equipos-computo.index')
             ->with('status', 'El equipo de cómputo se eliminó correctamente.');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function filtros(Request $request): array
+    {
+        return [
+            'usuario' => trim((string) $request->query('usuario', '')),
+            'departamento' => trim((string) $request->query('departamento', '')),
+            'descripcion' => trim((string) $request->query('descripcion', '')),
+            'marca_referencia' => trim((string) $request->query('marca_referencia', '')),
+            'serial' => trim((string) $request->query('serial', '')),
+            'windows' => trim((string) $request->query('windows', '')),
+            'office' => trim((string) $request->query('office', '')),
+            'disponible' => $request->query('disponible') === '1' ? '1' : '',
+            'traslado' => $request->query('traslado') === '1' ? '1' : '',
+            'baja' => $request->query('baja') === '1' ? '1' : '',
+        ];
+    }
+
+    /**
+     * @param  array<string, string>  $filtros
+     * @return Collection<int, EquipoComputo>
+     */
+    private function equiposFiltrados(array $filtros): Collection
+    {
+        return EquipoComputo::query()
+            ->filtrar($filtros)
+            ->get()
+            ->sortBy(fn (EquipoComputo $equipo): int => (int) $equipo->item)
+            ->values();
     }
 
     /**

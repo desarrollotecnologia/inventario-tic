@@ -61,6 +61,11 @@ class EquipoComputo extends Model
         return Antiguedad::desde($this->fecha_adquisicion);
     }
 
+    public function garantiaCaducada(): bool
+    {
+        return $this->fecha_garantia !== null && $this->fecha_garantia->isPast();
+    }
+
     public function urlFoto(string $campo): ?string
     {
         $ruta = $this->{$campo};
@@ -148,6 +153,14 @@ class EquipoComputo extends Model
 
         if (($filtros['disponible'] ?? '') === '1') {
             $query->where('en_disponible', true);
+        }
+
+        if (($filtros['traslado'] ?? '') === '1') {
+            $query->where('en_traslado', true);
+        }
+
+        if (($filtros['baja'] ?? '') === '1') {
+            $query->where('en_baja', true);
         }
 
         return $query;

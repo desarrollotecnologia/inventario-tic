@@ -96,17 +96,16 @@
             <button type="submit" class="rounded-lg bg-brand-green px-3 py-2 text-sm font-semibold text-white hover:bg-brand-green-dark">
                 Buscar
             </button>
-            <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800">
-                <input
-                    type="checkbox"
-                    name="disponible"
-                    value="1"
-                    @checked($filtros['disponible'] === '1')
-                    onchange="this.form.submit()"
-                    class="h-3.5 w-3.5 rounded border-sky-300 text-sky-700 focus:ring-sky-500"
-                >
-                Solo disponibles
-            </label>
+            @include('relacion.partials.filtros-estado')
+            <a
+                href="{{ route('equipos-computo.exportar', request()->query()) }}"
+                class="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-brand-green bg-white px-3 py-2 text-sm font-semibold text-brand-green hover:bg-brand-green-soft"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 10l5 5 5-5M12 15V3" />
+                </svg>
+                Descargar Excel
+            </a>
         </div>
         </div>
         </div>
@@ -145,9 +144,10 @@
                             <tr
                                 @class([
                                     'cursor-pointer text-slate-700',
-                                    'bg-orange-100 hover:bg-orange-200' => $equipo->en_traslado,
-                                    'bg-sky-100 hover:bg-sky-200' => $equipo->en_disponible && ! $equipo->en_traslado,
-                                    'hover:bg-slate-50' => ! $equipo->en_traslado && ! $equipo->en_disponible,
+                                    'bg-red-100 hover:bg-red-200' => $equipo->en_baja,
+                                    'bg-orange-100 hover:bg-orange-200' => $equipo->en_traslado && ! $equipo->en_baja,
+                                    'bg-sky-100 hover:bg-sky-200' => $equipo->en_disponible && ! $equipo->en_traslado && ! $equipo->en_baja,
+                                    'hover:bg-slate-50' => ! $equipo->en_traslado && ! $equipo->en_disponible && ! $equipo->en_baja,
                                 ])
                                 data-expand-row
                                 data-expand-target="detalle-equipo-{{ $equipo->id }}"
@@ -204,9 +204,10 @@
                                 id="detalle-equipo-{{ $equipo->id }}"
                                 @class([
                                     'hidden',
-                                    'bg-orange-50' => $equipo->en_traslado,
-                                    'bg-sky-50' => $equipo->en_disponible && ! $equipo->en_traslado,
-                                    'bg-slate-50' => ! $equipo->en_traslado && ! $equipo->en_disponible,
+                                    'bg-red-50' => $equipo->en_baja,
+                                    'bg-orange-50' => $equipo->en_traslado && ! $equipo->en_baja,
+                                    'bg-sky-50' => $equipo->en_disponible && ! $equipo->en_traslado && ! $equipo->en_baja,
+                                    'bg-slate-50' => ! $equipo->en_traslado && ! $equipo->en_disponible && ! $equipo->en_baja,
                                 ])
                             >
                                 <td colspan="11" class="px-4 py-5">
@@ -236,7 +237,12 @@
                                                                         —
                                                                     @endif
                                                                 @elseif ($field['type'] === 'date')
-                                                                    {{ $equipo->{$name}?->format('d/m/Y') ?: '—' }}
+                                                                    <span class="inline-flex flex-wrap items-center gap-2">
+                                                                        <span>{{ $equipo->{$name}?->format('d/m/Y') ?: '—' }}</span>
+                                                                        @if ($name === 'fecha_garantia' && $equipo->garantiaCaducada())
+                                                                            <span class="rounded-full bg-brand-red/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-red">Caducado</span>
+                                                                        @endif
+                                                                    </span>
                                                                 @elseif ($field['type'] === 'computed')
                                                                     {{ $equipo->antiguedad() }}
                                                                 @else

@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Models\Celular;
-use Illuminate\Validation\Rule;
 
 class CelularFields
 {
@@ -14,13 +13,13 @@ class CelularFields
     {
         return [
             'Ubicación y responsable' => [
-                'departamento' => ['label' => 'Departamento', 'type' => 'combobox', 'options' => EquipoComputoFields::departamentos()],
-                'area' => ['label' => 'Área', 'type' => 'combobox', 'options' => EquipoComputoFields::areas()],
+                'departamento' => ['label' => 'Departamento', 'type' => 'combobox', 'options' => EquipoComputoFields::departamentos(), 'allow_custom' => true],
+                'area' => ['label' => 'Área', 'type' => 'combobox', 'options' => EquipoComputoFields::areas(), 'allow_custom' => true],
                 'usuario' => ['label' => 'Usuario', 'type' => 'combobox', 'options' => EquipoComputoFields::usuarios(), 'allow_custom' => true],
                 'cargo' => ['label' => 'Cargo', 'type' => 'combobox', 'options' => EquipoComputoFields::cargos(), 'allow_custom' => true],
             ],
             'Equipo' => [
-                'tipo' => ['label' => 'Tipo', 'type' => 'select', 'options' => self::tipos(), 'allow_custom' => false],
+                'tipo' => ['label' => 'Tipo', 'type' => 'combobox', 'options' => self::tipos(), 'allow_custom' => true],
                 'marca' => ['label' => 'Marca', 'type' => 'combobox', 'options' => self::marcas(), 'allow_custom' => true],
                 'modelo' => ['label' => 'Modelo', 'type' => 'combobox', 'options_by_marca' => true, 'allow_custom' => true],
                 'almacenamiento' => ['label' => 'Almacenamiento', 'type' => 'combobox', 'options' => self::almacenamientos(), 'allow_custom' => true],
@@ -56,7 +55,6 @@ class CelularFields
 
                 $rules[$name] = match ($field['type']) {
                     'date' => ['nullable', 'date'],
-                    'select' => ['required', 'string', Rule::in($field['options'] ?? [])],
                     default => ['nullable', 'string', 'max:'.($field['type'] === 'textarea' ? '2000' : '255')],
                 };
             }
@@ -70,10 +68,14 @@ class CelularFields
      */
     public static function tipos(): array
     {
-        return [
-            'Celular',
-            'Tablet',
-        ];
+        return collect(['Celular', 'Tablet', 'CELULAR', 'TABLET'])
+            ->merge(Celular::query()->pluck('tipo'))
+            ->map(fn (mixed $valor): string => is_string($valor) ? trim($valor) : '')
+            ->filter()
+            ->unique(fn (string $valor): string => mb_strtolower($valor))
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values()
+            ->all();
     }
 
     /**

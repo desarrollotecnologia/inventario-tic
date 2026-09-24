@@ -118,14 +118,21 @@
                                         $opciones = $field['options'] ?? [];
                                     @endphp
                                     <div @if ($name === 'procesador') data-procesador-campo @endif>
-                                        <div class="relative" data-filter-combobox>
+                                        <div
+                                            class="relative"
+                                            data-filter-combobox
+                                            @if ($name === 'cuenta_office365')
+                                                data-combobox-min-width="420"
+                                                data-combobox-preserve-case
+                                            @endif
+                                        >
                                             <input
                                                 id="{{ $name }}"
                                                 type="text"
                                                 name="{{ $name === 'procesador' ? 'procesador_modelo' : $name }}"
                                                 value="{{ $valor }}"
                                                 autocomplete="off"
-                                                placeholder="Escribe para filtrar o elige {{ match ($field['label']) { 'Área' => 'un área', 'Descripción' => 'una descripción', 'Windows' => 'un Windows', 'Office' => 'un Office', 'Memoria' => 'una memoria', 'Disco' => 'un disco', 'Procesador' => 'un procesador', 'Usuario' => 'un usuario', 'Cargo' => 'un cargo', default => 'un departamento' } }}"
+                                                placeholder="Escribe para filtrar o elige {{ match ($field['label']) { 'Área' => 'un área', 'Descripción' => 'una descripción', 'Windows' => 'un Windows', 'Office' => 'un Office', 'Cuenta Office365' => 'una cuenta', 'Memoria' => 'una memoria', 'Disco' => 'un disco', 'Procesador' => 'un procesador', 'Usuario' => 'un usuario', 'Cargo' => 'un cargo', default => 'un departamento' } }}"
                                                 data-combobox-input
                                                 @if ($name === 'procesador') data-procesador-modelo @endif
                                                 class="block w-full rounded-lg border border-slate-300 px-2.5 py-2 pr-9 text-sm text-slate-900 shadow-sm outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green-soft"
@@ -138,6 +145,7 @@
                                             <ul
                                                 class="absolute z-20 mt-1 hidden max-h-56 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
                                                 data-combobox-list
+                                                @if ($name === 'cuenta_office365') data-combobox-preserve-case @endif
                                                 role="listbox"
                                             >
                                                 @foreach ($opciones as $opcion)
@@ -201,14 +209,21 @@
                                     </div>
                                 @else
                                     <div @if (isset($field['optional'])) data-optional-field @endif>
-                                        <input
-                                            id="{{ $name }}"
-                                            type="{{ $field['type'] }}"
-                                            name="{{ $name }}"
-                                            value="{{ old($name, $field['type'] === 'date' ? $equipo->{$name}?->format('Y-m-d') : $equipo->{$name}) }}"
-                                            @if ($name === 'fecha_adquisicion') data-antiguedad-source @endif
-                                            class="block w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green-soft"
-                                        >
+                                        <div @class(['flex items-center gap-2' => $name === 'fecha_garantia'])>
+                                            <input
+                                                id="{{ $name }}"
+                                                type="{{ $field['type'] }}"
+                                                name="{{ $name }}"
+                                                value="{{ old($name, $field['type'] === 'date' ? $equipo->{$name}?->format('Y-m-d') : $equipo->{$name}) }}"
+                                                @if ($name === 'fecha_adquisicion') data-antiguedad-source @endif
+                                                class="block w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green-soft"
+                                            >
+                                            @if ($name === 'fecha_garantia' && $equipo->garantiaCaducada())
+                                                <span class="shrink-0 rounded-full bg-brand-red/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand-red">
+                                                    Caducado
+                                                </span>
+                                            @endif
+                                        </div>
 
                                         @if (isset($field['optional']))
                                             @php
