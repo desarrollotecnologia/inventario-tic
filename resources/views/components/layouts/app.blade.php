@@ -1,3 +1,12 @@
+@props([
+    'title' => null,
+    'modulesNav' => null,
+])
+
+@php
+    $showModulesNav = $modulesNav ?? ! request()->routeIs('home');
+@endphp
+
 <!DOCTYPE html>
 <html lang="es">
     <head>
@@ -16,6 +25,11 @@
             <div class="w-1/2 bg-brand-green"></div>
             <div class="w-1/2 bg-brand-red"></div>
         </div>
+
+        @if ($showModulesNav)
+            <x-modules-nav />
+        @endif
+
         <div class="mx-auto w-full max-w-[100rem] px-3 py-6 sm:px-5 lg:px-8">
             @if (session('status'))
                 <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">

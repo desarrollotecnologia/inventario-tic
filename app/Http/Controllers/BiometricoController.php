@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BiometricoRequest;
+use App\Models\Baja;
 use App\Models\Biometrico;
 use App\Support\BiometricoFields;
 use Illuminate\Http\RedirectResponse;
@@ -94,9 +95,18 @@ class BiometricoController extends Controller
         ]);
 
         $campo = $validado['campo'];
+        $valor = $request->boolean('valor');
         $biometrico->update([
-            $campo => $request->boolean('valor'),
+            $campo => $valor,
         ]);
+
+        if ($campo === 'en_baja') {
+            if ($valor) {
+                Baja::registrarDesde($biometrico);
+            } else {
+                Baja::eliminarPendienteDe($biometrico);
+            }
+        }
 
         $mensaje = match ($campo) {
             'en_traslado' => $biometrico->en_traslado

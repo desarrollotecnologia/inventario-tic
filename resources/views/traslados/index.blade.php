@@ -1,6 +1,4 @@
 <x-layouts.app title="Traslados">
-    <a href="{{ route('home') }}" class="text-sm font-medium text-brand-green hover:text-brand-green-dark">← Volver al inicio</a>
-
     <x-portada-modulo
         title="Traslados"
         subtitle="Completa usuario, cargo, departamento y área de quien recibe. Al aplicar, el equipo queda asignado a esa persona."

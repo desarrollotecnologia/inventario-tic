@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ImpresoraRequest;
+use App\Models\Baja;
 use App\Models\Impresora;
 use App\Support\ImpresoraFields;
 use Illuminate\Http\RedirectResponse;
@@ -95,9 +96,18 @@ class ImpresoraController extends Controller
         ]);
 
         $campo = $validado['campo'];
+        $valor = $request->boolean('valor');
         $impresora->update([
-            $campo => $request->boolean('valor'),
+            $campo => $valor,
         ]);
+
+        if ($campo === 'en_baja') {
+            if ($valor) {
+                Baja::registrarDesde($impresora);
+            } else {
+                Baja::eliminarPendienteDe($impresora);
+            }
+        }
 
         $mensaje = match ($campo) {
             'en_traslado' => $impresora->en_traslado

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RadioRequest;
+use App\Models\Baja;
 use App\Models\Radio;
 use App\Support\RadioFields;
 use Illuminate\Http\RedirectResponse;
@@ -95,9 +96,18 @@ class RadioController extends Controller
         ]);
 
         $campo = $validado['campo'];
+        $valor = $request->boolean('valor');
         $radio->update([
-            $campo => $request->boolean('valor'),
+            $campo => $valor,
         ]);
+
+        if ($campo === 'en_baja') {
+            if ($valor) {
+                Baja::registrarDesde($radio);
+            } else {
+                Baja::eliminarPendienteDe($radio);
+            }
+        }
 
         $mensaje = match ($campo) {
             'en_traslado' => $radio->en_traslado

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CelularRequest;
+use App\Models\Baja;
 use App\Models\Celular;
 use App\Support\CelularFields;
 use Illuminate\Http\RedirectResponse;
@@ -96,9 +97,18 @@ class CelularController extends Controller
         ]);
 
         $campo = $validado['campo'];
+        $valor = $request->boolean('valor');
         $celular->update([
-            $campo => $request->boolean('valor'),
+            $campo => $valor,
         ]);
+
+        if ($campo === 'en_baja') {
+            if ($valor) {
+                Baja::registrarDesde($celular);
+            } else {
+                Baja::eliminarPendienteDe($celular);
+            }
+        }
 
         $mensaje = match ($campo) {
             'en_traslado' => $celular->en_traslado

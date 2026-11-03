@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'chrome' => [
+        'binary' => env('CHROME_PATH'),
+    ],
+
 ];

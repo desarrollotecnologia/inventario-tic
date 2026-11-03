@@ -1,6 +1,4 @@
 <x-layouts.app title="Relación Inventario Sistemas">
-    <a href="{{ route('home') }}" class="text-sm font-medium text-brand-green hover:text-brand-green-dark">← Volver al inicio</a>
-
     <x-portada-modulo
         title="Relación Inventario Sistemas"
         subtitle="Ingresa al submódulo del tipo de activo que vas a gestionar."

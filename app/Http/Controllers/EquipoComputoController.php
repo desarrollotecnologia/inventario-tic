@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\EquipoComputoRequest;
+use App\Models\Baja;
 use App\Models\EquipoComputo;
 use App\Support\EquipoComputoExcel;
 use App\Support\EquipoComputoFields;
@@ -105,9 +106,18 @@ class EquipoComputoController extends Controller
         ]);
 
         $campo = $validado['campo'];
+        $valor = $request->boolean('valor');
         $equipoComputo->update([
-            $campo => $request->boolean('valor'),
+            $campo => $valor,
         ]);
+
+        if ($campo === 'en_baja') {
+            if ($valor) {
+                Baja::registrarDesde($equipoComputo);
+            } else {
+                Baja::eliminarPendienteDe($equipoComputo);
+            }
+        }
 
         $mensaje = match ($campo) {
             'en_traslado' => $equipoComputo->en_traslado

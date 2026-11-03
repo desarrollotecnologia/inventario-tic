@@ -5,6 +5,8 @@
     'value' => '',
     'placeholder' => 'Escribe para filtrar o elige',
     'allowCustom' => true,
+    'manageDialog' => null,
+    'manageLabel' => '+ Agregar',
 ])
 
 <div {{ $attributes->class('relative z-20') }} data-filter-combobox>
@@ -46,6 +48,15 @@
                 data-value="Nuevo"
                 role="option"
             >Nuevo</li>
+        @endif
+        @if (filled($manageDialog))
+            <li
+                class="cursor-pointer border-t border-slate-200 px-3 py-2 text-sm font-semibold text-brand-green hover:bg-brand-green-soft"
+                data-combobox-option
+                data-combobox-manage="{{ $manageDialog }}"
+                data-value=""
+                role="option"
+            >{{ $manageLabel }}</li>
         @endif
         <li class="hidden px-3 py-2 text-sm text-slate-400" data-combobox-empty>
             Sin coincidencias. Elige Nuevo o escribe el valor.

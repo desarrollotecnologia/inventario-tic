@@ -261,9 +261,10 @@ document.querySelectorAll('[data-filter-combobox]').forEach((combo) => {
             }
 
             const esNuevo = opcion.hasAttribute('data-combobox-custom');
+            const esGestion = opcion.hasAttribute('data-combobox-manage');
             const marcaOpcion = opcion.getAttribute('data-marca');
             const coincideMarca = marcaOpcion === null || normalizar(marcaOpcion) === normalizar(marca);
-            const coincide = esNuevo || (coincideMarca && normalizar(opcion.dataset.value ?? '').includes(termino));
+            const coincide = esNuevo || esGestion || (coincideMarca && normalizar(opcion.dataset.value ?? '').includes(termino));
 
             opcion.classList.toggle('hidden', ! coincide);
 
@@ -315,6 +316,18 @@ document.querySelectorAll('[data-filter-combobox]').forEach((combo) => {
         opcion.addEventListener('mousedown', (event) => {
             event.preventDefault();
             event.stopPropagation();
+
+            if (opcion.hasAttribute('data-combobox-manage')) {
+                ocultar();
+                const dialogoId = opcion.getAttribute('data-combobox-manage');
+                const dialogo = dialogoId ? document.getElementById(dialogoId) : null;
+
+                if (dialogo instanceof HTMLDialogElement) {
+                    dialogo.showModal();
+                }
+
+                return;
+            }
 
             if (opcion.hasAttribute('data-combobox-custom')) {
                 input.value = '';

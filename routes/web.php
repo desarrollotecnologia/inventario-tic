@@ -1,11 +1,11 @@
 <?php
 
+use App\Http\Controllers\BajaController;
 use App\Http\Controllers\BiometricoController;
 use App\Http\Controllers\CelularController;
 use App\Http\Controllers\EquipoComputoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ImpresoraController;
-use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\RadioController;
 use App\Http\Controllers\RelacionInventarioController;
 use App\Http\Controllers\TrasladoController;
@@ -77,6 +77,32 @@ Route::delete('/traslados/firmas/{firma}', [TrasladoController::class, 'eliminar
 Route::post('/traslados/correo', [TrasladoController::class, 'enviarCorreo'])
     ->name('traslados.correo');
 
-Route::get('/baja-de-equipos', [ModuleController::class, 'show'])
-    ->defaults('module', 'baja-de-equipos')
+Route::get('/baja-de-equipos', [BajaController::class, 'index'])
     ->name('modules.bajas');
+
+Route::get('/baja-de-equipos/historial', [BajaController::class, 'historial'])
+    ->name('bajas.historial');
+
+Route::post('/baja-de-equipos/firmas', [BajaController::class, 'guardarFirma'])
+    ->name('bajas.firmas.store');
+
+Route::delete('/baja-de-equipos/firmas/{firma}', [BajaController::class, 'eliminarFirma'])
+    ->name('bajas.firmas.destroy');
+
+Route::post('/baja-de-equipos/correo', [BajaController::class, 'enviarCorreo'])
+    ->name('bajas.correo');
+
+Route::get('/baja-de-equipos/{baja}/formato', [BajaController::class, 'formato'])
+    ->name('bajas.formato');
+
+Route::get('/baja-de-equipos/{baja}/acta', [BajaController::class, 'edit'])
+    ->name('bajas.edit');
+
+Route::put('/baja-de-equipos/{baja}/acta', [BajaController::class, 'update'])
+    ->name('bajas.update');
+
+Route::post('/baja-de-equipos/solicitantes', [BajaController::class, 'storeSolicitante'])
+    ->name('bajas.solicitantes.store');
+
+Route::delete('/baja-de-equipos/solicitantes/{solicitante}', [BajaController::class, 'destroySolicitante'])
+    ->name('bajas.solicitantes.destroy');
