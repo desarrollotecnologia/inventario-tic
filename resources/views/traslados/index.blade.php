@@ -68,6 +68,7 @@
                                         $equipo instanceof \App\Models\Radio => 'r-'.$equipo->id,
                                         $equipo instanceof \App\Models\Impresora => 'i-'.$equipo->id,
                                         $equipo instanceof \App\Models\Biometrico => 'b-'.$equipo->id,
+                                        $equipo instanceof \App\Models\LectorCodigoBarras => 'l-'.$equipo->id,
                                         default => (string) $equipo->id,
                                     };
                                     $prefijo = 'traslados.'.$clave;

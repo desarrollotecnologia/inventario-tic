@@ -42,7 +42,11 @@
             <h2 class="text-sm font-semibold text-slate-800">Búsqueda rápida</h2>
             <a href="{{ route('equipos-computo.index') }}" class="text-xs font-medium text-brand-green hover:text-brand-green-dark">Limpiar</a>
         </div>
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+            <label class="block max-w-[9.5rem]">
+                <span class="mb-1 block text-[11px] font-medium uppercase tracking-wide text-slate-500">Código</span>
+                <input type="text" name="codigo" value="{{ $filtros['codigo'] }}" class="block w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green-soft">
+            </label>
             <label class="block">
                 <span class="mb-1 block text-[11px] font-medium uppercase tracking-wide text-slate-500">Usuario</span>
                 <input type="text" name="usuario" value="{{ $filtros['usuario'] }}" class="block w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green-soft">
@@ -69,7 +73,7 @@
                 <span class="mb-1 block text-[11px] font-medium uppercase tracking-wide text-slate-500">Marca y Referencia</span>
                 <input type="text" name="marca_referencia" value="{{ $filtros['marca_referencia'] }}" class="block w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green-soft">
             </label>
-            <label class="block">
+            <label class="block max-w-[9.5rem]">
                 <span class="mb-1 block text-[11px] font-medium uppercase tracking-wide text-slate-500">Serial</span>
                 <input type="text" name="serial" value="{{ $filtros['serial'] }}" class="block w-full rounded-lg border border-slate-300 px-2.5 py-2 text-sm text-slate-900 outline-none focus:border-brand-green focus:ring-2 focus:ring-brand-green-soft">
             </label>

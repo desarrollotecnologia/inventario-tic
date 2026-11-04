@@ -11,6 +11,7 @@ use App\Models\Celular;
 use App\Models\EquipoComputo;
 use App\Models\Firma;
 use App\Models\Impresora;
+use App\Models\LectorCodigoBarras;
 use App\Models\Radio;
 use App\Models\Traslado;
 use App\Support\CorreoTrasladoFields;
@@ -39,7 +40,8 @@ class TrasladoController extends Controller
                 ->concat(Radio::query()->where('en_traslado', true)->get())
                 ->concat(Impresora::query()->where('en_traslado', true)->get())
                 ->concat(Biometrico::query()->where('en_traslado', true)->get())
-                ->sortBy(fn (EquipoComputo|Celular|Radio|Impresora|Biometrico $equipo): int => (int) $equipo->item)
+                ->concat(LectorCodigoBarras::query()->where('en_traslado', true)->get())
+                ->sortBy(fn (EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $equipo): int => (int) $equipo->item)
                 ->values(),
             'porNotificar' => $porNotificar,
             'firmas' => Firma::query()->latest('id')->get(),
@@ -84,10 +86,14 @@ class TrasladoController extends Controller
             ->where('en_traslado', true)
             ->get()
             ->keyBy('id');
+        $lectoresPendientes = LectorCodigoBarras::query()
+            ->where('en_traslado', true)
+            ->get()
+            ->keyBy('id');
 
         $aplicados = 0;
 
-        DB::transaction(function () use ($request, $equiposPendientes, $celularesPendientes, $radiosPendientes, $impresorasPendientes, $biometricosPendientes, &$aplicados): void {
+        DB::transaction(function () use ($request, $equiposPendientes, $celularesPendientes, $radiosPendientes, $impresorasPendientes, $biometricosPendientes, $lectoresPendientes, &$aplicados): void {
             foreach ($request->validated('traslados') as $clave => $datos) {
                 $clave = (string) $clave;
 
@@ -138,6 +144,19 @@ class TrasladoController extends Controller
                     }
 
                     $this->aplicarTrasladoBiometrico($biometrico, $datos);
+                    $aplicados++;
+
+                    continue;
+                }
+
+                if (str_starts_with($clave, 'l-')) {
+                    $lector = $lectoresPendientes->get((int) substr($clave, 2));
+
+                    if ($lector === null) {
+                        continue;
+                    }
+
+                    $this->aplicarTrasladoLector($lector, $datos);
                     $aplicados++;
 
                     continue;
@@ -402,6 +421,38 @@ class TrasladoController extends Controller
     }
 
     /**
+     * @param  array{fecha: string, usuario_recibe: string, cargo_recibe: string, departamento_recibe: string, area_recibe: string, observaciones?: string|null}  $datos
+     */
+    private function aplicarTrasladoLector(LectorCodigoBarras $lector, array $datos): void
+    {
+        Traslado::query()->create([
+            'lector_codigo_barras_id' => $lector->id,
+            'fecha' => $datos['fecha'],
+            'usuario_entrega' => $lector->usuario,
+            'cargo_entrega' => $lector->cargo,
+            'departamento_entrega' => $lector->departamento,
+            'area_entrega' => $lector->area,
+            'codigo' => $lector->codigo_contable,
+            'tipo' => 'LECTOR CODIGO BARRAS',
+            'descripcion_equipo' => $lector->marcaMostrada(),
+            'serial' => $lector->serialMostrado(),
+            'usuario_recibe' => $datos['usuario_recibe'],
+            'cargo_recibe' => $datos['cargo_recibe'],
+            'departamento_recibe' => $datos['departamento_recibe'],
+            'area_recibe' => $datos['area_recibe'],
+            'observaciones' => $datos['observaciones'] ?? null,
+        ]);
+
+        $lector->update([
+            'usuario' => $datos['usuario_recibe'],
+            'cargo' => $datos['cargo_recibe'],
+            'departamento' => $datos['departamento_recibe'],
+            'area' => $datos['area_recibe'],
+            'en_traslado' => false,
+        ]);
+    }
+
+    /**
      * @return Collection<int, Traslado>
      */
     private function trasladosPorNotificar(): Collection
@@ -505,6 +556,17 @@ class TrasladoController extends Controller
                 $biometrico->departamento
             ));
 
+        LectorCodigoBarras::query()
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get(['usuario', 'cargo', 'area', 'departamento'])
+            ->each(fn (LectorCodigoBarras $lector) => $registrar(
+                $lector->usuario,
+                $lector->cargo,
+                $lector->area,
+                $lector->departamento
+            ));
+
         Traslado::query()
             ->latest('id')
             ->get(['usuario_recibe', 'cargo_recibe', 'area_recibe', 'departamento_recibe'])
@@ -530,6 +592,7 @@ class TrasladoController extends Controller
             ->merge($this->valoresDe(Radio::class, $camposEquipo))
             ->merge($this->valoresDe(Impresora::class, $camposEquipo))
             ->merge($this->valoresDe(Biometrico::class, $camposEquipo))
+            ->merge($this->valoresDe(LectorCodigoBarras::class, $camposEquipo))
             ->merge($this->valoresDe(Traslado::class, $camposTraslado))
             ->unique(fn (string $valor): string => mb_strtolower($valor))
             ->sort(SORT_NATURAL | SORT_FLAG_CASE)

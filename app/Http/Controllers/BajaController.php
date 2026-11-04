@@ -275,17 +275,7 @@ class BajaController extends Controller
                 ->update(['correo_enviado_at' => $ahora]);
 
             foreach ($bajas as $baja) {
-                $activo = $baja->equipo
-                    ?? $baja->celular
-                    ?? $baja->radio
-                    ?? $baja->impresora
-                    ?? $baja->biometrico;
-
-                if ($activo === null) {
-                    continue;
-                }
-
-                $activo->forceFill(['en_baja' => false])->save();
+                $baja->descontarDelInventario();
             }
         });
 

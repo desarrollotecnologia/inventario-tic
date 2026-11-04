@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'item',
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
 class Impresora extends Model
 {
     /** @use HasFactory<ImpresoraFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'impresoras';
 

@@ -215,6 +215,9 @@ class BajaTest extends TestCase
             ->assertSee('EQ-HIST-1')
             ->assertSee('Historial Usuario')
             ->assertSee('Obsoleto')
+            ->assertSee('data-expand-row', false)
+            ->assertSee('detalle-baja-'.$baja->id, false)
+            ->assertSee('Se solicita dar de baja al siguiente activo: EQ-HIST-1')
             ->assertDontSee('EQ-PEND-1')
             ->assertDontSee('EQ-LISTA-1');
     }
@@ -300,9 +303,13 @@ class BajaTest extends TestCase
         });
 
         $this->assertNotNull($baja->fresh()->correo_enviado_at);
-        $this->assertFalse($equipo->fresh()->en_baja);
+        $this->assertSoftDeleted($equipo);
 
         $this->get(route('modules.bajas'))
+            ->assertOk()
+            ->assertDontSee('EQ-MAIL-1');
+
+        $this->get(route('equipos-computo.index'))
             ->assertOk()
             ->assertDontSee('EQ-MAIL-1');
 

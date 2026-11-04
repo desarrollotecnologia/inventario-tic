@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
     'radio_id',
     'impresora_id',
     'biometrico_id',
+    'lector_codigo_barras_id',
     'fecha',
     'item',
     'codigo',
@@ -41,7 +42,7 @@ use Illuminate\Support\Collection;
 ])]
 class Baja extends Model
 {
-    public static function registrarDesde(EquipoComputo|Celular|Radio|Impresora|Biometrico $activo): self
+    public static function registrarDesde(EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $activo): self
     {
         $pendiente = self::pendienteDe($activo);
 
@@ -79,6 +80,14 @@ class Baja extends Model
                 'descripcion' => $activo->descripcion ?: $activo->modelo,
                 'serial' => $activo->serialMostrado(),
             ],
+            $activo instanceof LectorCodigoBarras => [
+                'lector_codigo_barras_id' => $activo->id,
+                'codigo' => $activo->codigo_contable,
+                'categoria' => 'Lector códigos de barras',
+                'tipo' => $activo->modelo ?: 'LECTOR CODIGO BARRAS',
+                'descripcion' => $activo->marcaMostrada(),
+                'serial' => $activo->serialMostrado(),
+            ],
             default => [
                 'biometrico_id' => $activo->id,
                 'categoria' => 'Biométrico',
@@ -111,7 +120,7 @@ class Baja extends Model
         return BajaActaFields::siguienteActaNumero();
     }
 
-    public static function eliminarPendienteDe(EquipoComputo|Celular|Radio|Impresora|Biometrico $activo): void
+    public static function eliminarPendienteDe(EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $activo): void
     {
         self::pendienteDe($activo)?->delete();
     }
@@ -124,14 +133,15 @@ class Baja extends Model
         self::query()
             ->whereNotNull('completada_at')
             ->where('motivo_baja', 'Registro histórico previo al acta digital.')
-            ->with(['equipo', 'celular', 'radio', 'impresora', 'biometrico'])
+            ->with(['equipo', 'celular', 'radio', 'impresora', 'biometrico', 'lectorCodigoBarras'])
             ->get()
             ->each(function (self $baja): void {
                 $activo = $baja->equipo
                     ?? $baja->celular
                     ?? $baja->radio
                     ?? $baja->impresora
-                    ?? $baja->biometrico;
+                    ?? $baja->biometrico
+                    ?? $baja->lectorCodigoBarras;
 
                 if ($activo === null || ! $activo->en_baja) {
                     return;
@@ -147,11 +157,11 @@ class Baja extends Model
                 ]);
             });
 
-        foreach ([EquipoComputo::class, Celular::class, Radio::class, Impresora::class, Biometrico::class] as $modelo) {
+        foreach ([EquipoComputo::class, Celular::class, Radio::class, Impresora::class, Biometrico::class, LectorCodigoBarras::class] as $modelo) {
             $modelo::query()
                 ->where('en_baja', true)
                 ->orderBy('id')
-                ->each(function (EquipoComputo|Celular|Radio|Impresora|Biometrico $activo): void {
+                ->each(function (EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $activo): void {
                     if (self::pendienteDe($activo) !== null) {
                         return;
                     }
@@ -166,7 +176,7 @@ class Baja extends Model
         }
     }
 
-    public static function pendienteDe(EquipoComputo|Celular|Radio|Impresora|Biometrico $activo): ?self
+    public static function pendienteDe(EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $activo): ?self
     {
         return self::query()
             ->whereNull('completada_at')
@@ -176,7 +186,7 @@ class Baja extends Model
             ->first();
     }
 
-    public static function porNotificarDe(EquipoComputo|Celular|Radio|Impresora|Biometrico $activo): ?self
+    public static function porNotificarDe(EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $activo): ?self
     {
         return self::query()
             ->whereNotNull('completada_at')
@@ -186,7 +196,7 @@ class Baja extends Model
             ->first();
     }
 
-    public static function ultimaCompletadaDe(EquipoComputo|Celular|Radio|Impresora|Biometrico $activo): ?self
+    public static function ultimaCompletadaDe(EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $activo): ?self
     {
         return self::query()
             ->whereNotNull('completada_at')
@@ -209,13 +219,14 @@ class Baja extends Model
             ->get();
     }
 
-    private static function filtrarPorActivo(Builder $query, EquipoComputo|Celular|Radio|Impresora|Biometrico $activo): Builder
+    private static function filtrarPorActivo(Builder $query, EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $activo): Builder
     {
         return match (true) {
             $activo instanceof EquipoComputo => $query->where('equipo_computo_id', $activo->id),
             $activo instanceof Celular => $query->where('celular_id', $activo->id),
             $activo instanceof Radio => $query->where('radio_id', $activo->id),
             $activo instanceof Impresora => $query->where('impresora_id', $activo->id),
+            $activo instanceof LectorCodigoBarras => $query->where('lector_codigo_barras_id', $activo->id),
             default => $query->where('biometrico_id', $activo->id),
         };
     }
@@ -223,7 +234,7 @@ class Baja extends Model
     /**
      * @param  array<string, mixed>  $base
      */
-    private static function informacionDesde(EquipoComputo|Celular|Radio|Impresora|Biometrico $activo, array $base): string
+    private static function informacionDesde(EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $activo, array $base): string
     {
         $detalle = collect([
             $base['tipo'] ?? null,
@@ -244,11 +255,11 @@ class Baja extends Model
     {
         $filas = collect();
 
-        foreach ([EquipoComputo::class, Celular::class, Radio::class, Impresora::class, Biometrico::class] as $modelo) {
+        foreach ([EquipoComputo::class, Celular::class, Radio::class, Impresora::class, Biometrico::class, LectorCodigoBarras::class] as $modelo) {
             $modelo::query()
                 ->where('en_baja', true)
                 ->orderBy('id')
-                ->each(function (EquipoComputo|Celular|Radio|Impresora|Biometrico $activo) use ($filas): void {
+                ->each(function (EquipoComputo|Celular|Radio|Impresora|Biometrico|LectorCodigoBarras $activo) use ($filas): void {
                     $pendiente = self::pendienteDe($activo);
 
                     if ($pendiente !== null) {
@@ -294,6 +305,23 @@ class Baja extends Model
     public function estaEnHistorial(): bool
     {
         return $this->correo_enviado_at !== null;
+    }
+
+    public function descontarDelInventario(): void
+    {
+        $activo = $this->equipo
+            ?? $this->celular
+            ?? $this->radio
+            ?? $this->impresora
+            ?? $this->biometrico
+            ?? $this->lectorCodigoBarras;
+
+        if ($activo === null) {
+            return;
+        }
+
+        $activo->forceFill(['en_baja' => false])->save();
+        $activo->delete();
     }
 
     public function urlAdjunto(string $campo): ?string
@@ -373,6 +401,14 @@ class Baja extends Model
     public function biometrico(): BelongsTo
     {
         return $this->belongsTo(Biometrico::class);
+    }
+
+    /**
+     * @return BelongsTo<LectorCodigoBarras, $this>
+     */
+    public function lectorCodigoBarras(): BelongsTo
+    {
+        return $this->belongsTo(LectorCodigoBarras::class);
     }
 
     /**

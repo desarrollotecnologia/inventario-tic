@@ -6,6 +6,7 @@ use App\Http\Controllers\CelularController;
 use App\Http\Controllers\EquipoComputoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ImpresoraController;
+use App\Http\Controllers\LectorCodigoBarrasController;
 use App\Http\Controllers\RadioController;
 use App\Http\Controllers\RelacionInventarioController;
 use App\Http\Controllers\TrasladoController;
@@ -31,6 +32,14 @@ Route::resource('relacion-inventario-sistemas/biometricos', BiometricoController
 
 Route::patch('relacion-inventario-sistemas/biometricos/{biometrico}/accion', [BiometricoController::class, 'accion'])
     ->name('biometricos.accion');
+
+Route::resource('relacion-inventario-sistemas/lectores-codigos-barras', LectorCodigoBarrasController::class)
+    ->parameters(['lectores-codigos-barras' => 'lectorCodigoBarras'])
+    ->except(['show'])
+    ->names('lectores-codigos-barras');
+
+Route::patch('relacion-inventario-sistemas/lectores-codigos-barras/{lectorCodigoBarras}/accion', [LectorCodigoBarrasController::class, 'accion'])
+    ->name('lectores-codigos-barras.accion');
 
 Route::resource('relacion-inventario-sistemas/radios-de-comunicacion', RadioController::class)
     ->parameters(['radios-de-comunicacion' => 'radio'])

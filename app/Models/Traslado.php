@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'radio_id',
     'impresora_id',
     'biometrico_id',
+    'lector_codigo_barras_id',
     'fecha',
     'usuario_entrega',
     'cargo_entrega',
@@ -67,6 +68,14 @@ class Traslado extends Model
     public function biometrico(): BelongsTo
     {
         return $this->belongsTo(Biometrico::class);
+    }
+
+    /**
+     * @return BelongsTo<LectorCodigoBarras, $this>
+     */
+    public function lectorCodigoBarras(): BelongsTo
+    {
+        return $this->belongsTo(LectorCodigoBarras::class);
     }
 
     /**

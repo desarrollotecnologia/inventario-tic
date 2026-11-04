@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'item',
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
 class Biometrico extends Model
 {
     /** @use HasFactory<BiometricoFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'biometricos';
 

@@ -153,6 +153,7 @@ class EquipoComputoController extends Controller
     private function filtros(Request $request): array
     {
         return [
+            'codigo' => trim((string) $request->query('codigo', '')),
             'usuario' => trim((string) $request->query('usuario', '')),
             'departamento' => trim((string) $request->query('departamento', '')),
             'descripcion' => trim((string) $request->query('descripcion', '')),

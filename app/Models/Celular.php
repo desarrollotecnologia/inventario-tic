@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'item',
@@ -39,7 +40,7 @@ use Illuminate\Database\Eloquent\Model;
 class Celular extends Model
 {
     /** @use HasFactory<CelularFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'celulares';
 

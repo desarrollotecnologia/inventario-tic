@@ -40,6 +40,12 @@ class RelacionInventarioController extends Controller
                     'route' => 'biometricos.index',
                     'ready' => true,
                 ],
+                [
+                    'title' => 'Lectores Códigos de Barras',
+                    'description' => 'Inventario de lectores de códigos de barras.',
+                    'route' => 'lectores-codigos-barras.index',
+                    'ready' => true,
+                ],
             ],
         ]);
     }

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
@@ -52,7 +53,7 @@ use Illuminate\Support\Facades\Storage;
 class EquipoComputo extends Model
 {
     /** @use HasFactory<EquipoComputoFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'equipos_computo';
 
@@ -136,7 +137,7 @@ class EquipoComputo extends Model
      */
     public function scopeFiltrar(Builder $query, array $filtros): Builder
     {
-        foreach (['usuario', 'departamento', 'descripcion', 'marca_referencia', 'windows', 'office'] as $campo) {
+        foreach (['codigo', 'usuario', 'departamento', 'descripcion', 'marca_referencia', 'windows', 'office'] as $campo) {
             if (filled($filtros[$campo] ?? null)) {
                 $query->whereRaw('UPPER('.$campo.') LIKE ?', [TextoInventario::like($filtros[$campo])]);
             }
