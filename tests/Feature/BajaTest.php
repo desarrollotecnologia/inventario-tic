@@ -8,6 +8,7 @@ use App\Models\BajaSolicitante;
 use App\Models\EquipoComputo;
 use App\Models\Firma;
 use App\Support\BajaAdjuntoNombres;
+use App\Support\BajaEvidenciasZip;
 use App\Support\BajaMensaje;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -276,15 +277,15 @@ class BajaTest extends TestCase
             $this->assertStringContainsString('PANTALLA PARTIDA', $html);
             $this->assertStringContainsString('HP 240', $html);
             $this->assertStringContainsString('overflow-x:auto', $html);
-            $this->assertCount(3, $mail->attachments());
+            $this->assertCount(2, $mail->attachments());
 
             $bajaMail = $mail->bajas->first();
             $nombres = collect($mail->attachments())->map(fn ($adjunto) => $adjunto->as)->all();
 
             $this->assertSame(BajaAdjuntoNombres::acta($bajaMail), $nombres[0] ?? null);
             $this->assertSame('Acta_Baja_HP 240.pdf', $nombres[0] ?? null);
-            $this->assertSame('HP 240_evidencia.jpg', $nombres[1] ?? null);
-            $this->assertSame('HP 240_evidencia_2.jpg', $nombres[2] ?? null);
+            $this->assertSame(BajaEvidenciasZip::nombreArchivo(), $nombres[1] ?? null);
+            $this->assertStringEndsWith('.zip', (string) ($nombres[1] ?? ''));
 
             $acta = $mail->attachments()[0] ?? null;
             $actaPdf = $acta?->attachWith(
@@ -293,6 +294,24 @@ class BajaTest extends TestCase
             );
             $this->assertIsString($actaPdf);
             $this->assertStringStartsWith('%PDF', $actaPdf);
+
+            $zipAdjunto = $mail->attachments()[1] ?? null;
+            $zipBytes = $zipAdjunto?->attachWith(
+                fn (): string => '',
+                fn ($data): string => is_callable($data) ? $data() : (string) $data,
+            );
+            $this->assertIsString($zipBytes);
+            $this->assertSame("PK\x03\x04", substr($zipBytes, 0, 4));
+
+            $carpeta = BajaEvidenciasZip::nombreCarpeta($bajaMail);
+            $tmpZip = tempnam(sys_get_temp_dir(), 'baja-zip-');
+            file_put_contents($tmpZip, $zipBytes);
+            $zip = new \ZipArchive;
+            $this->assertTrue($zip->open($tmpZip));
+            $this->assertNotFalse($zip->locateName($carpeta.'/HP 240_evidencia.jpg'));
+            $this->assertNotFalse($zip->locateName($carpeta.'/HP 240_evidencia_2.jpg'));
+            $zip->close();
+            @unlink($tmpZip);
 
             $this->assertSame(BajaMensaje::asunto(), $mail->envelope()->subject);
             $this->assertStringStartsWith('Baja de equipos de computo ', BajaMensaje::asunto());

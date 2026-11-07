@@ -34,7 +34,7 @@ class BajaAdjuntoNombres
         return self::descripcion($baja).$sufijo.'.'.ltrim($extension, '.');
     }
 
-    private static function sanear(string $nombre): string
+    public static function sanear(string $nombre): string
     {
         $nombre = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], ' ', $nombre);
         $nombre = preg_replace('/\s+/u', ' ', $nombre) ?? $nombre;

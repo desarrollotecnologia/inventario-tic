@@ -6,6 +6,7 @@ use App\Models\Baja;
 use App\Models\Firma;
 use App\Support\BajaActaAdjunto;
 use App\Support\BajaAdjuntoNombres;
+use App\Support\BajaEvidenciasZip;
 use App\Support\BajaMensaje;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
@@ -13,7 +14,6 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 
 class BajasRealizadasMail extends Mailable
 {
@@ -57,26 +57,15 @@ class BajasRealizadasMail extends Mailable
                 fn (): string => BajaActaAdjunto::pdf($baja),
                 BajaAdjuntoNombres::acta($baja),
             )->withMime('application/pdf');
+        }
 
-            foreach ($baja->rutasEvidencia() as $foto => $ruta) {
-                if (! Storage::disk('public')->exists($ruta)) {
-                    continue;
-                }
+        $zip = BajaEvidenciasZip::bytes($this->bajas);
 
-                $extension = pathinfo($ruta, PATHINFO_EXTENSION) ?: 'jpg';
-
-                $adjuntos[] = Attachment::fromStorageDisk('public', $ruta)
-                    ->as(BajaAdjuntoNombres::evidencia($baja, $extension, $foto + 1));
-            }
-
-            $soporte = $baja->adjunto_soporte;
-
-            if (filled($soporte) && Storage::disk('public')->exists($soporte)) {
-                $extension = pathinfo((string) $soporte, PATHINFO_EXTENSION) ?: 'bin';
-
-                $adjuntos[] = Attachment::fromStorageDisk('public', $soporte)
-                    ->as(BajaAdjuntoNombres::diagnostico($baja, $extension));
-            }
+        if (is_string($zip) && $zip !== '') {
+            $adjuntos[] = Attachment::fromData(
+                fn (): string => $zip,
+                BajaEvidenciasZip::nombreArchivo(),
+            )->withMime('application/zip');
         }
 
         return $adjuntos;
