@@ -4,12 +4,21 @@
             <div class="w-1/2 bg-brand-green"></div>
             <div class="w-1/2 bg-brand-red"></div>
         </div>
-        <div class="px-6 py-10 sm:px-10">
-            <h1 class="text-3xl font-bold tracking-tight sm:text-5xl">
-                <span class="text-brand-green">Col</span><span class="text-brand-red">beef</span>
-            </h1>
-            <p class="mt-2 text-lg font-semibold text-white">Inventario TIC</p>
-            <p class="mt-1 max-w-2xl text-sm text-slate-300 sm:text-base">Selecciona un módulo para ingresar.</p>
+        <div class="flex items-center justify-between gap-5 px-6 py-8 sm:gap-7 sm:px-10 sm:py-10">
+            <div class="min-w-0">
+                <h1 class="text-3xl font-bold tracking-tight sm:text-5xl">
+                    <span class="text-brand-green">Col</span><span class="text-brand-red">beef</span>
+                </h1>
+                <p class="mt-2 text-lg font-semibold text-white">Inventario TIC</p>
+                <p class="mt-1 max-w-2xl text-sm text-slate-300 sm:text-base">Selecciona un módulo para ingresar.</p>
+            </div>
+            <div class="portada-avatar shrink-0">
+                <img
+                    src="{{ asset('images/kall-su.png') }}"
+                    alt="Inventario TIC"
+                    class="h-20 w-20 rounded-full object-cover sm:h-24 sm:w-24 md:h-28 md:w-28"
+                >
+            </div>
         </div>
     </section>
 

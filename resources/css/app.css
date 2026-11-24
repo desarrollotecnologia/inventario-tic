@@ -53,6 +53,23 @@
     filter: drop-shadow(0 0 18px rgba(23, 130, 58, 0.35));
 }
 
+.portada-avatar {
+    position: relative;
+    border-radius: 9999px;
+    padding: 3px;
+    background: linear-gradient(145deg, rgba(34, 211, 238, 0.95), rgba(23, 130, 58, 0.85) 45%, rgba(208, 17, 43, 0.75));
+    box-shadow:
+        0 0 0 1px rgba(34, 211, 238, 0.35),
+        0 0 28px rgba(34, 211, 238, 0.35),
+        0 0 40px rgba(23, 130, 58, 0.25);
+}
+
+.portada-avatar img {
+    display: block;
+    background: #06140c;
+    box-shadow: inset 0 0 0 1px rgba(6, 20, 12, 0.65);
+}
+
 .registro-mayusculas input:not([type='file']):not([type='date']):not([type='hidden']):not([type='checkbox']):not([type='radio']):not([name='cuenta_office365']):not([name='contrasena_deslock_eset']),
 .registro-mayusculas textarea,
 .registro-mayusculas select,
