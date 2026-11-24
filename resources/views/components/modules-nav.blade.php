@@ -28,6 +28,13 @@
             'active' => request()->is('baja-de-equipos', 'baja-de-equipos/*'),
             'icon' => 'archive',
         ],
+        [
+            'label' => 'Actas',
+            'short' => 'Actas',
+            'route' => 'modules.actas',
+            'active' => request()->is('actas', 'actas/*'),
+            'icon' => 'document',
+        ],
     ];
 @endphp
 
@@ -97,6 +104,10 @@
                         @elseif ($item['icon'] === 'move')
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 8l-4 4 4 4M17 8l4 4-4 4M3 12h18" />
+                            </svg>
+                        @elseif ($item['icon'] === 'document')
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 3.75h4.5L18 8.25v12a.75.75 0 0 1-.75.75H6.75A.75.75 0 0 1 6 20.25V4.5a.75.75 0 0 1 .75-.75Zm4.5 0v4.5H18M8.25 12h7.5M8.25 15.75h7.5M8.25 19.5h4.5" />
                             </svg>
                         @else
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">

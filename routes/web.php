@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ActaEntregaController;
+use App\Http\Controllers\ActaSalidaController;
+use App\Http\Controllers\ActasController;
 use App\Http\Controllers\BajaController;
 use App\Http\Controllers\BiometricoController;
 use App\Http\Controllers\CelularController;
@@ -85,6 +88,35 @@ Route::delete('/traslados/firmas/{firma}', [TrasladoController::class, 'eliminar
 
 Route::post('/traslados/correo', [TrasladoController::class, 'enviarCorreo'])
     ->name('traslados.correo');
+
+Route::get('/actas', [ActasController::class, 'index'])
+    ->name('modules.actas');
+
+Route::get('/actas/entrega', [ActaEntregaController::class, 'index'])
+    ->name('actas.entrega');
+Route::get('/actas/entrega/crear', [ActaEntregaController::class, 'create'])
+    ->name('actas.entrega.create');
+Route::post('/actas/entrega', [ActaEntregaController::class, 'store'])
+    ->name('actas.entrega.store');
+Route::get('/actas/entrega/{actaEntrega}/editar', [ActaEntregaController::class, 'edit'])
+    ->name('actas.entrega.edit');
+Route::put('/actas/entrega/{actaEntrega}', [ActaEntregaController::class, 'update'])
+    ->name('actas.entrega.update');
+Route::get('/actas/entrega/{actaEntrega}/formato', [ActaEntregaController::class, 'formato'])
+    ->name('actas.entrega.formato');
+
+Route::get('/actas/salida', [ActaSalidaController::class, 'index'])
+    ->name('actas.salida');
+Route::get('/actas/salida/crear', [ActaSalidaController::class, 'create'])
+    ->name('actas.salida.create');
+Route::post('/actas/salida', [ActaSalidaController::class, 'store'])
+    ->name('actas.salida.store');
+Route::get('/actas/salida/{actaSalida}/editar', [ActaSalidaController::class, 'edit'])
+    ->name('actas.salida.edit');
+Route::put('/actas/salida/{actaSalida}', [ActaSalidaController::class, 'update'])
+    ->name('actas.salida.update');
+Route::get('/actas/salida/{actaSalida}/formato', [ActaSalidaController::class, 'formato'])
+    ->name('actas.salida.formato');
 
 Route::get('/baja-de-equipos', [BajaController::class, 'index'])
     ->name('modules.bajas');

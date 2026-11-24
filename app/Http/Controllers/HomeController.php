@@ -28,6 +28,12 @@ class HomeController extends Controller
                     'route' => 'modules.bajas',
                     'icon' => 'archive',
                 ],
+                [
+                    'title' => 'Actas',
+                    'description' => 'Genera actas de entrega y de salida de equipos.',
+                    'route' => 'modules.actas',
+                    'icon' => 'document',
+                ],
             ],
         ]);
     }

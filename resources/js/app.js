@@ -1,3 +1,294 @@
+const actaInventarioCatalogo = (() => {
+    const nodo = document.querySelector('[data-acta-inventario-catalogo]');
+
+    if (! (nodo instanceof HTMLElement)) {
+        return [];
+    }
+
+    try {
+        const datos = JSON.parse(nodo.textContent || '[]');
+
+        return Array.isArray(datos) ? datos : [];
+    } catch {
+        return [];
+    }
+})();
+
+const normalizarActa = (valor) => String(valor || '')
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .trim();
+
+const listaActaInventario = (() => {
+    const lista = document.createElement('ul');
+    lista.className = 'fixed z-[9999] mt-1 hidden max-h-72 min-w-[18rem] overflow-auto rounded-lg border border-slate-300 bg-white py-1 text-sm shadow-xl';
+    lista.dataset.actaInventarioLista = '1';
+    document.body.appendChild(lista);
+
+    return lista;
+})();
+
+let actaInventarioActivo = null;
+
+const ocultarActaInventario = () => {
+    listaActaInventario.classList.add('hidden');
+    listaActaInventario.innerHTML = '';
+    actaInventarioActivo = null;
+};
+
+const aplicarActaInventario = (fila, item) => {
+    if (! (fila instanceof HTMLElement) || ! item) {
+        return;
+    }
+
+    const setValor = (campo, valor) => {
+        const nodo = fila.querySelector(`[data-acta-inventario-input="${campo}"]`);
+
+        if (nodo instanceof HTMLInputElement || nodo instanceof HTMLTextAreaElement) {
+            nodo.value = valor ?? '';
+        }
+    };
+
+    setValor('descripcion', item.descripcion);
+    setValor('marca', item.marca);
+    setValor('modelo', item.modelo);
+    setValor('serial', String(item.serial || '').replace(/\n+/g, ' | '));
+};
+
+const mostrarActaInventario = (campo) => {
+    if (! (campo instanceof HTMLInputElement || campo instanceof HTMLTextAreaElement)) {
+        return;
+    }
+
+    const fila = campo.closest('[data-equipos-fila]');
+    const clave = campo.getAttribute('data-acta-inventario-input');
+
+    if (! (fila instanceof HTMLElement) || ! clave) {
+        return;
+    }
+
+    const termino = normalizarActa(campo.value);
+    const coincidencias = actaInventarioCatalogo
+        .filter((item) => {
+            const haystack = normalizarActa([
+                item.descripcion,
+                item.marca,
+                item.modelo,
+                item.serial,
+            ].join(' '));
+
+            const foco = normalizarActa(item[clave] ?? '');
+
+            if (termino === '') {
+                return true;
+            }
+
+            return foco.includes(termino) || haystack.includes(termino);
+        })
+        .slice(0, 40);
+
+    listaActaInventario.innerHTML = '';
+
+    if (coincidencias.length === 0) {
+        const vacio = document.createElement('li');
+        vacio.className = 'px-3 py-2 text-sm text-slate-400';
+        vacio.textContent = 'Sin coincidencias en inventario';
+        listaActaInventario.appendChild(vacio);
+    } else {
+        coincidencias.forEach((item) => {
+            const opcion = document.createElement('li');
+            opcion.className = 'cursor-pointer px-3 py-2 text-sm text-slate-800 hover:bg-brand-green-soft hover:text-brand-green-dark';
+            opcion.innerHTML = `<div class="font-medium">${item.descripcion || 'Equipo'}</div>
+                <div class="text-xs text-slate-500">${[item.marca, item.modelo].filter(Boolean).join(' · ')}</div>
+                <div class="text-xs text-slate-400 whitespace-pre-line">${item.serial || ''}</div>`;
+            opcion.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+                aplicarActaInventario(fila, item);
+                ocultarActaInventario();
+            });
+            listaActaInventario.appendChild(opcion);
+        });
+    }
+
+    const caja = campo.getBoundingClientRect();
+    listaActaInventario.style.left = `${Math.round(caja.left)}px`;
+    listaActaInventario.style.top = `${Math.round(caja.bottom + 4)}px`;
+    listaActaInventario.style.width = `${Math.max(Math.round(caja.width), 280)}px`;
+    listaActaInventario.classList.remove('hidden');
+    actaInventarioActivo = campo;
+};
+
+document.querySelectorAll('[data-acta-formulario]').forEach((formulario) => {
+    const representante = formulario.querySelector('[data-acta-representante]');
+    const entregado = formulario.querySelector('[data-acta-entregado-nombre]');
+    const destino = formulario.querySelector('[data-acta-destino]');
+    const recibido = formulario.querySelector('[data-acta-recibido-nombre]');
+
+    const sincronizarEntrega = () => {
+        if (
+            representante instanceof HTMLInputElement
+            && entregado instanceof HTMLInputElement
+        ) {
+            entregado.value = representante.value;
+        }
+    };
+
+    const sincronizarRecepcion = () => {
+        if (
+            destino instanceof HTMLInputElement
+            && recibido instanceof HTMLInputElement
+        ) {
+            recibido.value = destino.value;
+        }
+    };
+
+    representante?.addEventListener('input', sincronizarEntrega);
+    destino?.addEventListener('input', sincronizarRecepcion);
+    sincronizarEntrega();
+    sincronizarRecepcion();
+
+    formulario.addEventListener('focusin', (event) => {
+        const campo = event.target;
+
+        if (
+            campo instanceof HTMLElement
+            && campo.hasAttribute('data-acta-inventario-input')
+        ) {
+            mostrarActaInventario(campo);
+        }
+    });
+
+    formulario.addEventListener('input', (event) => {
+        const campo = event.target;
+
+        if (
+            campo instanceof HTMLElement
+            && campo.hasAttribute('data-acta-inventario-input')
+        ) {
+            mostrarActaInventario(campo);
+        }
+    });
+});
+
+listaActaInventario.addEventListener('mousedown', (event) => {
+    // Evita que el input pierda el foco al hacer scroll o clicar opciones.
+    event.preventDefault();
+});
+
+document.addEventListener('pointerdown', (event) => {
+    if (! (event.target instanceof Node)) {
+        return;
+    }
+
+    if (
+        listaActaInventario.contains(event.target)
+        || event.target === actaInventarioActivo
+        || (actaInventarioActivo instanceof HTMLElement && actaInventarioActivo.contains(event.target))
+    ) {
+        return;
+    }
+
+    ocultarActaInventario();
+});
+
+window.addEventListener('scroll', (event) => {
+    if (
+        event.target === listaActaInventario
+        || (event.target instanceof Node && listaActaInventario.contains(event.target))
+    ) {
+        return;
+    }
+
+    ocultarActaInventario();
+}, true);
+
+window.addEventListener('resize', ocultarActaInventario);
+
+document.querySelectorAll('[data-equipos-lista]').forEach((lista) => {
+    const contenedor = lista.closest('form') ?? document;
+    const agregar = contenedor.querySelector('[data-equipos-agregar]');
+
+    const renumerar = () => {
+        const filas = Array.from(lista.querySelectorAll('[data-equipos-fila]'));
+
+        filas.forEach((fila, index) => {
+            fila.querySelectorAll('[name^="equipos["]').forEach((campo) => {
+                if (! (campo instanceof HTMLInputElement || campo instanceof HTMLTextAreaElement)) {
+                    return;
+                }
+
+                campo.name = campo.name.replace(/equipos\[\d+]/, `equipos[${index}]`);
+            });
+
+            const numero = fila.querySelector('[data-equipos-numero]');
+
+            if (numero) {
+                numero.textContent = String(index + 1);
+            }
+
+            const quitar = fila.querySelector('[data-equipos-quitar]');
+
+            if (quitar instanceof HTMLElement) {
+                quitar.classList.toggle('hidden', filas.length === 1);
+            }
+        });
+    };
+
+    agregar?.addEventListener('click', () => {
+        const plantilla = lista.querySelector('[data-equipos-fila]');
+
+        if (! (plantilla instanceof HTMLElement)) {
+            return;
+        }
+
+        const clon = plantilla.cloneNode(true);
+
+        if (! (clon instanceof HTMLElement)) {
+            return;
+        }
+
+        clon.querySelectorAll('input, textarea').forEach((campo) => {
+            if (campo instanceof HTMLInputElement) {
+                if (campo.type === 'number') {
+                    campo.value = '1';
+                } else {
+                    campo.value = '';
+                }
+            }
+
+            if (campo instanceof HTMLTextAreaElement) {
+                campo.value = '';
+            }
+        });
+
+        lista.appendChild(clon);
+        renumerar();
+        ocultarActaInventario();
+    });
+
+    lista.addEventListener('click', (event) => {
+        const boton = event.target instanceof Element
+            ? event.target.closest('[data-equipos-quitar]')
+            : null;
+
+        if (! (boton instanceof HTMLElement)) {
+            return;
+        }
+
+        const fila = boton.closest('[data-equipos-fila]');
+        const filas = lista.querySelectorAll('[data-equipos-fila]');
+
+        if (fila instanceof HTMLElement && filas.length > 1) {
+            fila.remove();
+            renumerar();
+            ocultarActaInventario();
+        }
+    });
+
+    renumerar();
+});
+
 document.querySelectorAll('[data-expand-row]').forEach((fila) => {
     const destino = fila.getAttribute('data-expand-target');
     const detalle = destino ? document.getElementById(destino) : null;

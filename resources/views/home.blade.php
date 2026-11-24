@@ -13,7 +13,7 @@
         </div>
     </section>
 
-    <div class="mt-8 grid gap-6 md:grid-cols-3">
+    <div class="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
         @foreach ($modules as $module)
             <a
                 href="{{ route($module['route']) }}"
@@ -27,6 +27,10 @@
                     @elseif ($module['icon'] === 'move')
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M7 8l-4 4 4 4M17 8l4 4-4 4M3 12h18" />
+                        </svg>
+                    @elseif ($module['icon'] === 'document')
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3.75h4.5L18 8.25v12a.75.75 0 0 1-.75.75H6.75A.75.75 0 0 1 6 20.25V4.5a.75.75 0 0 1 .75-.75Zm4.5 0v4.5H18M8.25 12h7.5M8.25 15.75h7.5M8.25 19.5h4.5" />
                         </svg>
                     @else
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
